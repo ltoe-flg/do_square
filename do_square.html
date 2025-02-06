@@ -51,9 +51,9 @@
 
 <body>
     <input name="myfile" type="file" accept=".jpg" onchange="fileup(this)" class="file-button"/>
-    <a href="#" class="btn" id="button">Red or Gray?</a><br>
+    <a href="#" class="btn" id="button">Do square</a><br>
     赤色以外をグレースケール化します
-    ※ファイルを選択して画像が表示されてから”Red or Gray?"を一回押してください、ボタンの色が元に戻ると処理された画像が表示されます、保存してお使いください。元の写真には影響ありません。<br>
+    ※ファイルを選択して画像が表示されてから”Do square"を一回押してください、ボタンの色が元に戻ると処理された画像が表示されます、保存してお使いください。元の写真には影響ありません。<br>
     何かエラーが出たらブラウザを更新してください。<br>
     スマホの場合に起こる現象(10/2時点)<br>
     ・画像サイズが縮小されます<br>
@@ -83,32 +83,27 @@
             img_b64 = rog_print(img_binary)
             my_input[0].src='data:image/jpeg;base64,' + img_b64
 
-        gamma22LUT = np.array([pow(x/255.0 , 2.2) for x in range(256)],dtype=np.float32) #ガンマ解除用LUT
-        a=[10.0933873523,5.0135366692,-0.1105581243,0.0005368424,-0.0000007456]
+        color = (0,0,0)
         
         def rog_print(path):
             jpg = np.frombuffer(path,dtype=np.uint8)
             color_img = cv.imdecode(jpg, cv.IMREAD_COLOR)
 
             x,y,c = np.shape(color_img)
-
-            deg_img = cv.LUT(color_img, gamma22LUT)
-            cvt_img = cv.cvtColor(deg_img, cv.COLOR_BGR2GRAY)
-            gray_img =pow(cvt_img,1.0/2.2) * 255
-            del deg_img
-            del cvt_img
     
-            HSV_img = cv.cvtColor(color_img, cv.COLOR_BGR2HSV).astype(np.float32)
+            if x < y:
+                p=0
+                vb=0
+                q=(y-x)%2
+                hb=(y-x)//2
+            elif y < x:
+                p=(x-y)%2
+                vb=(x-y)//2
+                q=0
+                hb=0
     
-            SV_threshold = np.zeros((x,y),dtype=np.float32)
-            for i,v in enumerate(a):
-                SV_threshold = SV_threshold + v*np.power(HSV_img[:,:,0],i)
-
-            mask_img = ((HSV_img[:,:,0] * 2 <= 30) | (HSV_img[:,:,0] * 2 >= 330)) & (HSV_img[:,:,1] * (100.0/255.0) >= SV_threshold) & (HSV_img[:,:,2] * (100.0/255.0) >= SV_threshold)
+            out_img = cv.copyMakeBorder(color_img, hb, hb+q, vb, vb+p,cv.BORDER_CONSTANT,value=color)
         
-            out_img = np.zeros((x,y,c),dtype=np.uint8)
-            out_img[:,:,:] = ((~mask_img) * gray_img)[:,:,None] + color_img[:,:,:] * mask_img[:,:,None]
-    
             encord_param = [int(cv.IMWRITE_JPEG_QUALITY),98]
             retval, buf = cv.imencode('.jpg', out_img, encord_param)
             img_str = base64.b64encode(buf).decode('ascii')
