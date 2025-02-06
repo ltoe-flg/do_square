@@ -1,7 +1,7 @@
 # Do square
 画像の長編に黒帯をつけて正方形化します  
 こちらへアクセスしてください  
-https://ltoe-flg.github.io/Red_or_Gray/do_square.html  
+https://ltoe-flg.github.io/do_square/do_square.html  
 使い方  
 1.ファイルを選択して画像が表示されてから”Do square"を一回押してください  
 2.ボタンの色がグレーになり、元の色に戻ると処理後の画像が表示されます  
